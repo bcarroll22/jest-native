@@ -37,6 +37,13 @@ describe('.toHaveTextContent', () => {
     expect(getByTestId('text')).toHaveTextContent('Step 1 of 4');
   });
 
+  test('can handle text with an interpolated variable', () => {
+    const variable = 'variable';
+    const { container } = render(<Text>With a {variable}</Text>);
+
+    expect(container).toHaveTextContent('With a variable');
+  });
+
   test('can handle multiple levels', () => {
     const { queryByTestId } = render(
       <Text testID="parent">
@@ -70,6 +77,32 @@ describe('.toHaveTextContent', () => {
     );
 
     expect(queryByTestId('parent')).toHaveTextContent('OneTwoThreeFourFiveSixSevenEightNine');
+  });
+
+  test('can handle multiple levels with no explicit children prop', () => {
+    const NoChildren = ({ text }) => <Text>{text}</Text>;
+    const answer = 'Answer';
+    const { container } = render(
+      <View>
+        <Text>
+          {answer}
+          {': '}
+        </Text>
+        <NoChildren text="4" />
+        {null}
+        <Text>2</Text>
+      </View>,
+    );
+
+    expect(container).toHaveTextContent(/^Answer: 42$/);
+  });
+
+  test('throws when no match is found', () => {
+    const { container } = render(<Text>Should succeed</Text>);
+
+    expect(() => {
+      expect(container).toHaveTextContent('Should fail');
+    }).toThrow();
   });
 
   test('does not throw error with empty content', () => {
